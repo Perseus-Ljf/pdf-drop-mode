@@ -346,7 +346,7 @@ doi is returned."
 
   (let ((item '("^file://.*\\.pdf$" . pdf-drop--file-dnd-protocol)))
     (if pdf-drop-mode
-        (add-to-list 'dnd-protocol-alist item)
+      (setq dnd-protocol-alist (cons item dnd-protocol-alist))
       (setq dnd-protocol-alist (remove item dnd-protocol-alist)))))
 
 
