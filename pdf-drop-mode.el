@@ -97,7 +97,7 @@ doi (or nil) as arguments."
 ;; Adapted from https://github.com/jkitchin/org-ref (org-ref-arxiv.el)
 ;; Copyright (C) 2015-2021 John Kitchin (GPL v2)
 (defvar pdf-drop--arxiv-regex "\\(arXiv:\\)\\([0-9]\\{4\\}[.][0-9]\\{4,5\\}\\)\\(v[0-9]+\\)?"
-    "Regular expressions matching an arxiv-id (new format, 2007).")
+  "Regular expressions matching an arxiv-id (new format, 2007).")
 
 (defvar pdf-drop--arxiv-search-url "https://ui.adsabs.harvard.edu/abs/%s/exportcitation"
   "URL to arxiv searh yAPI")
@@ -120,7 +120,7 @@ doi (or nil) as arguments."
 
   (let* ((url (format pdf-drop--arxiv-query-url arxiv-id))
          (status (url-http-symbol-value-in-buffer 'url-http-response-status
-                                   (url-retrieve-synchronously url))))
+                                                  (url-retrieve-synchronously url))))
     (eq 200 status)))
 
 ;; Adapted from https://github.com/jkitchin/org-ref (doi-utils.el)
@@ -231,7 +231,7 @@ doi is returned."
 (defun pdf-drop--file-dnd-fallback (uri action)
   (let ((dnd-protocol-alist
          (rassq-delete-all 'pdf-drop--file-dnd-protocol
-          (copy-alist dnd-protocol-alist))))
+                           (copy-alist dnd-protocol-alist))))
     (dnd-handle-one-url nil action uri)))
 
 (defun pdf-drop--file-dnd-protocol (uri action)
@@ -315,7 +315,7 @@ doi is returned."
 
   (let ((url-mime-accept-string "text/bibliography;style=bibtex"))
     (with-current-buffer
-      (url-retrieve-synchronously (format pdf-drop--crossref-query-url doi))
+        (url-retrieve-synchronously (format pdf-drop--crossref-query-url doi))
       (decode-coding-string
        (buffer-substring (string-match "@" (buffer-string)) (point)) 'utf-8))))
 
@@ -346,10 +346,18 @@ doi is returned."
 
   (let ((item '("^file://.*\\.pdf$" . pdf-drop--file-dnd-protocol)))
     (if pdf-drop-mode
-      (setq dnd-protocol-alist (cons item dnd-protocol-alist))
-      (setq dnd-protocol-alist (remove item dnd-protocol-alist)))))
+        (progn
+          (setq dnd-protocol-alist (cons item dnd-protocol-alist))
+          (add-to-list 'global-mode-string
+                       (propertize "P" 'face '(:foreground "pink")))
+
+          )
+      (setq dnd-protocol-alist (remove item dnd-protocol-alist))
+      (setq global-mode-string
+            (remove (propertize "P" 'face '(:foreground "pink"))
+                    global-mode-string))
+      )))
 
 
 (provide 'pdf-drop-mode)
 ;;; pdf-drop-mode.el ends here
-
