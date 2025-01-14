@@ -36,7 +36,7 @@
 ;;                the first page (PDF is transformed into text using the pdftotext
 ;;                utility)
 ;; - doi/title: ask the user to enter the title of the file and query the crossref
-;;              database to try to get a correspondong DOI. 
+;;              database to try to get a correspondong DOI.
 ;; - doi/user: ask user to enter the DOI of the PDF.
 ;; - arxiv/content: search the content of the file to try to locate a arxiv-id regex
 ;;                  on the first page (PDF is transformed into text using the
@@ -107,7 +107,7 @@ doi (or nil) as arguments."
 
 (defun pdf-drop-validate-doi (doi)
   "Check if DOI is valid by querying crossref"
-  
+
   (let* ((url (format "https://hdl.handle.net/%s?noredirect" doi))
          (status (url-http-symbol-value-in-buffer 'url-http-response-status
                                                   (url-retrieve-synchronously url))))
@@ -117,7 +117,7 @@ doi (or nil) as arguments."
 ;; Copyright (C) 2015-2021 John Kitchin (GPL v2)
 (defun pdf-drop-validate-arxiv-id (arxiv-id)
   "Check if ARXIV-ID is valid by querying arXiv"
-  
+
   (let* ((url (format pdf-drop--arxiv-query-url arxiv-id))
          (status (url-http-symbol-value-in-buffer 'url-http-response-status
                                    (url-retrieve-synchronously url))))
@@ -155,7 +155,7 @@ doi is returned."
           (decode-coding-string (encode-coding-string raw-json-string 'utf-8) 'utf-8))
     (setq json-data
           (json-read-from-string json-string))
-    
+
     (let* (;; (score-threshold (or score-threshold 10))
            (candidates (mapcar (lambda (x)
                                  (let* ((x-full (cdr (assoc 'fullCitation x)))
@@ -195,7 +195,7 @@ doi is returned."
                (search-forward-regexp pdf-drop--doi-regex nil t))
           (string-trim (match-string 1) "[ \\t\\n\\r()]+" "[ \\t\\n\\r()]+")
         ))))
-      
+
 (defun pdf-drop-get-tag-from-metadata (file tag)
   "Get TAG from file metadata."
 
@@ -204,16 +204,16 @@ doi is returned."
                                 "-s" "-s" "-s" (concat "-" tag) file)))
       (if (and (eq status 0) (> (buffer-size) 0))
           (string-trim (buffer-substring (point-min) (point-max)))))))
-  
+
 
 (defun pdf-drop-get-doi-from-metadata (file)
   "Get DOI from file metadata."
-  
+
   (pdf-drop-get-tag-from-metadata file "DOI"))
 
 (defun pdf-drop-get-title-from-metadata (file)
   "Get TITLE from file metadata."
-  
+
   (pdf-drop-get-tag-from-metadata file "TITLE"))
 
 (defun pdf-drop-get-arxiv-id-from-content (file)
@@ -257,7 +257,7 @@ doi is returned."
                        (throw 'found file-id))
                    (message "doi/content method failed for %s" file))))
 
-              ((eq method 'arxiv/content) 
+              ((eq method 'arxiv/content)
                (let ((arxiv-id (pdf-drop-get-arxiv-id-from-content file)))
                  (if (and arxiv-id (pdf-drop-validate-arxiv-id arxiv-id))
                      (progn
@@ -272,7 +272,7 @@ doi is returned."
                        (setq file-id `(doi . ,doi))
                        (throw 'found file-id))
                    (message "doi/metadata method failed for %s" file))))
-            
+
               ((eq method 'doi/title)
                (let ((buffer (find-file file)))
                  (with-current-buffer buffer
@@ -302,7 +302,7 @@ doi is returned."
                            (message "doi/user method failed for %s" file)))
                      (kill-buffer buffer))))))))
 
-    (if file-id 
+    (if file-id
         (progn
           (message "ID found: %s" file-id)
           (if pdf-drop-search-hook
@@ -312,7 +312,7 @@ doi is returned."
 
 (defun pdf-drop--bibtex-from-doi (doi)
   "Retrieve (raw) bibtex information for DOI using crossref API."
-  
+
   (let ((url-mime-accept-string "text/bibliography;style=bibtex"))
     (with-current-buffer
       (url-retrieve-synchronously (format pdf-drop--crossref-query-url doi))
@@ -344,11 +344,11 @@ doi is returned."
   :global t
   :init-value nil
 
-  (let ((item '("^file:" . pdf-drop--file-dnd-protocol)))
+  (let ((item '("^file://.*\\.pdf$" . pdf-drop--file-dnd-protocol)))
     (if pdf-drop-mode
         (add-to-list 'dnd-protocol-alist item)
       (setq dnd-protocol-alist (remove item dnd-protocol-alist)))))
- 
+
 
 (provide 'pdf-drop-mode)
 ;;; pdf-drop-mode.el ends here
